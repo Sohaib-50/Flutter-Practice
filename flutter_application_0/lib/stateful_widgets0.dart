@@ -38,30 +38,14 @@ class MessageInputWidget extends StatefulWidget {
 }
 
 class _MessageInputWidgetState extends State<MessageInputWidget> {
-  final TextEditingController _controller = TextEditingController();
   String text = '';
 
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(_setText);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _setText() {
-    String text;
-    if (_controller.text.isNotEmpty) {
-      text = "Your message is: ${_controller.text}";
-    } else {
-      text = '';
+  void changeText(String value) {
+    if (value.isNotEmpty) {
+      value = "Your message is: $value";
     }
     setState(() {
-      this.text = text;
+      text = value;
     });
   }
 
@@ -69,13 +53,13 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   Widget build(BuildContext context) {
     return Column(children: [
       TextField(
-        controller: _controller,
         decoration: const InputDecoration(
           prefixIcon: Icon(Icons.keyboard),
           labelText: 'Enter Message',
         ),
+        onChanged: ((value) => changeText(value)),
       ),
-      Text(text),
+      Text(this.text)
     ]);
   }
 }
