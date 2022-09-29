@@ -5,6 +5,25 @@ void main() {
   runApp(const MyApp());
 }
 
+class Post {
+  String body;
+  String author;
+  int likes = 0;
+  bool userLiked = false;
+
+  // Constructor
+  Post(this.body, this.author);
+
+  void userClickLike() {
+    userLiked = !userLiked;
+    if (userLiked) {
+      likes += 1;
+    } else {
+      likes -= 1;
+    }
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -12,9 +31,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sohaib\'s App',
-      theme: ThemeData(
-        primarySwatch: Colors.indigo,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blueGrey),
       home: MyHomePage(),
     );
   }
@@ -28,11 +45,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String text = "";
+  List<Post> posts = [];
 
-  void changeText(String newText) {
+  void newPost(String text) {
     setState(() {
-      text = newText;
+      posts.add(Post(text, "Sohaib"));
     });
   }
 
@@ -40,21 +57,26 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Sohaib's App")),
-      body: Column(children: [MessageInputWidget(changeText), Text(this.text)]),
+      body: Column(
+          // ignore: prefer_const_constructors
+          children: [
+            Expanded(child: PostsList(posts)),
+            PostInputWidget(newPost)
+          ]),
     );
   }
 }
 
-class MessageInputWidget extends StatefulWidget {
+class PostInputWidget extends StatefulWidget {
   final Function(String) callback;
 
-  const MessageInputWidget(this.callback, {super.key});
+  const PostInputWidget(this.callback, {super.key});
 
   @override
-  State<MessageInputWidget> createState() => _MessageInputWidgetState();
+  State<PostInputWidget> createState() => _PostInputWidgetState();
 }
 
-class _MessageInputWidgetState extends State<MessageInputWidget> {
+class _PostInputWidgetState extends State<PostInputWidget> {
   final textController = TextEditingController();
 
   @override
@@ -64,8 +86,11 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   }
 
   void saveClicked() {
-    widget.callback(textController.text);
-    textController.clear();
+    if (textController.text.isNotEmpty) {
+      widget.callback(textController.text);
+      textController.clear();
+      FocusScope.of(context).unfocus();
+    }
   }
 
   @override
@@ -82,6 +107,56 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
           onPressed: saveClicked,
         ),
       ),
+    );
+  }
+}
+
+class PostsList extends StatefulWidget {
+  final List<Post> posts;
+
+  const PostsList(this.posts, {super.key});
+
+  @override
+  State<PostsList> createState() => _PostsListState();
+}
+
+class _PostsListState extends State<PostsList> {
+  void likePost(Function callback) {
+    setState(() {
+      callback();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: widget.posts.length,
+      itemBuilder: (BuildContext context, int index) {
+        var post = widget.posts[index];
+        return Card(
+          child: Row(children: [
+            // post body and author
+            Expanded(
+                child: ListTile(
+                    title: Text(post.body), subtitle: Text(post.author))),
+            // like button and number of likes
+            Column(children: [
+              // like button
+              IconButton(
+                  onPressed: () => likePost(post.userClickLike),
+                  // heart icon, filled if user liked, empty if not
+                  icon: Icon(
+                      post.userLiked ? Icons.favorite : Icons.favorite_border),
+                  color: post.userLiked ? Colors.blueGrey : null),
+              // number of likes
+              Text(
+                post.likes.toString(),
+                style: TextStyle(fontSize: 15),
+              )
+            ])
+          ]),
+        );
+      },
     );
   }
 }
