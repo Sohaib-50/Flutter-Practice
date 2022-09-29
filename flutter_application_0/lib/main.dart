@@ -20,62 +20,68 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  String text = "";
+
+  void changeText(String newText) {
+    setState(() {
+      text = newText;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Sohaib's App")),
-      body: MessageInputWidget(),
+      body: Column(children: [MessageInputWidget(changeText), Text(this.text)]),
     );
   }
 }
 
 class MessageInputWidget extends StatefulWidget {
-  const MessageInputWidget({super.key});
+  final Function(String) callback;
+
+  const MessageInputWidget(this.callback, {super.key});
 
   @override
   State<MessageInputWidget> createState() => _MessageInputWidgetState();
 }
 
 class _MessageInputWidgetState extends State<MessageInputWidget> {
-  final TextEditingController _controller = TextEditingController();
-  String text = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(_setText);
-  }
+  final textController = TextEditingController();
 
   @override
   void dispose() {
-    _controller.dispose();
+    textController.dispose();
     super.dispose();
   }
 
-  void _setText() {
-    String text;
-    if (_controller.text.isNotEmpty) {
-      text = "Your message is: ${_controller.text}";
-    } else {
-      text = '';
-    }
-    setState(() {
-      this.text = text;
-    });
+  void saveClicked() {
+    widget.callback(textController.text);
+    textController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      TextField(
-        controller: _controller,
-        decoration: const InputDecoration(
-          prefixIcon: Icon(Icons.keyboard),
-          labelText: 'Enter Message',
+    return TextField(
+      controller: textController,
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.keyboard),
+        labelText: 'Enter Message',
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.send),
+          splashColor: Colors.blueGrey,
+          tooltip: "Save post",
+          onPressed: saveClicked,
         ),
       ),
-      Text(text),
-    ]);
+    );
   }
 }
