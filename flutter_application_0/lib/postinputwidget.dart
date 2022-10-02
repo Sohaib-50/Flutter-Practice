@@ -35,7 +35,7 @@ class _PostInputWidgetState extends State<PostInputWidget> {
         labelText: 'Enter Message',
         suffixIcon: IconButton(
           icon: const Icon(Icons.send),
-          splashColor: Colors.blueGrey,
+          splashColor: Colors.blue,
           tooltip: "Save post",
           onPressed: saveClicked,
         ),
